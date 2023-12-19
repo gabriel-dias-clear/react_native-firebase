@@ -1,75 +1,71 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Button, TextInput, FlatList } from 'react-native';
-import Listing from './src/Listing';
 import firebase from './src/firebaseConnection';
 
 export default function App() {
-  const [name, setName] = useState('Loading...');
-  const [position, setPosition] = useState('');
-  const [users, setUsers] = useState([]);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [user, setUser] = useState('');
 
-  useEffect(() => {
-    async function fetchData() {
-      await firebase.database().ref('user').on('value', snapshot => {
-        setUsers([]);
-        snapshot.forEach(childItem => {
-          let data = {
-            key: childItem.key,
-            name: childItem.val().name,
-            position: childItem.val().position,
-          };
-          setUsers(oldArray => [...oldArray, data]);
-        });
+  async function login() {
+    await firebase.auth().signInWithEmailAndPassword(email, password)
+      .then(value => {
+        alert('Welcome, ' + value.user.email);
+        setUser(value.user.email);
+      })
+      .catch(error => {
+        alert('Something went wrong');
       });
-    }
-    fetchData();
-  }, []);
+  }
 
-  async function register() {
-    if (name !== '' && position !== '') {
-      let usersRef = await firebase.database().ref('users');
-      let key = usersRef.push().key;
-
-      usersRef.child(key).set({
-        name: name,
-        position: position,
-      });
-    }
+  async function logout() {
+    await firebase.auth().signOut();
+    setUser('');
+    alert('Successfully logged out');
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Name</Text>
+      <Text style={styles.text}>Email</Text>
       <TextInput
         style={styles.input}
         underlineColorAndroid="transparent"
-        onChangeText={(text) => setName(text)}
+        onChangeText={(text) => setEmail(text)}
       />
 
-      <Text style={styles.text}>Position</Text>
+      <Text style={styles.text}>Password</Text>
       <TextInput
         style={styles.input}
         underlineColorAndroid="transparent"
-        onChangeText={(text) => setPosition(text)}
+        onChangeText={(text) => setPassword(text)}
+        secureTextEntry={true}
       />
 
       <Button
-        title="Add Employee"
-        onPress={register}
+        title="Login"
+        onPress={login}
       />
 
       <FlatList
         keyExtractor={item => item.key}
         data={users}
-        renderItem={({ item }) => (<Listing data={item}/>)}
+        renderItem={({ item }) => (<Listing data={item} />)}
       />
+
+      <Text>
+        {user}
+      </Text>
+      {user.length > 0 && <Button
+        title="Logout"
+        onPress={logout}
+      />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container:{
-    flex:1,
+  container: {
+    flex: 1,
     margin: 10,
   },
   text: {
