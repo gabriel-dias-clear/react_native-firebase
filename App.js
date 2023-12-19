@@ -1,18 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Button, TextInput } from 'react-native';
-
+import { View, Text, StyleSheet, Button, TextInput, FlatList } from 'react-native';
+import Listing from './src/Listing';
 import firebase from './src/firebaseConnection';
 
 export default function App() {
   const [name, setName] = useState('Loading...');
   const [position, setPosition] = useState('');
-  
+  const [users, setUsers] = useState([]);
+
   useEffect(() => {
     async function fetchData() {
-      await firebase.database().ref('type').set('Client');
-      await firebase.database().ref('type').remove();
-      await firebase.database().ref('users').child(3).update({
-        name: 'John',
+      await firebase.database().ref('user').on('value', snapshot => {
+        setUsers([]);
+        snapshot.forEach(childItem => {
+          let data = {
+            key: childItem.key,
+            name: childItem.val().name,
+            position: childItem.val().position,
+          };
+          setUsers(oldArray => [...oldArray, data]);
+        });
       });
     }
     fetchData();
@@ -20,10 +27,10 @@ export default function App() {
 
   async function register() {
     if (name !== '' && position !== '') {
-      let users = await firebase.database().ref('users');
-      let key = users.push().key;
+      let usersRef = await firebase.database().ref('users');
+      let key = usersRef.push().key;
 
-      users.child(key).set({
+      usersRef.child(key).set({
         name: name,
         position: position,
       });
@@ -50,13 +57,19 @@ export default function App() {
         title="Add Employee"
         onPress={register}
       />
+
+      <FlatList
+        keyExtractor={item => item.key}
+        data={users}
+        renderItem={({ item }) => (<Listing data={item}/>)}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container:{
+    flex:1,
     margin: 10,
   },
   text: {
