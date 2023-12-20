@@ -11,13 +11,13 @@ export default function Login({ changeStatus }){
     function handleLogin(){
         if(type === 'login'){
             const user = firebase.auth().signInWithEmailAndPassword(email, password).then(user => {
-                changeStatus(user.user.uid)
-            }).catch(error => console.error(error))
+                changeStatus(user.user.id)
+            }).catch(() =>error => console.error(error))
         }
         else{
             const user = firebase.auth().createUserWithEmailAndPassword(email, password).then(user => {
-                changeStatus(user.user.uid)
-            }).catch(error => console.error(error))
+                changeStatus(user.user.id)
+            }).catch(() =>error => console.error(error))
         }
     }
   
@@ -41,17 +41,16 @@ export default function Login({ changeStatus }){
                 style={[styles.handleLogin, { backgroundColor: type === 'login' ? 'blue' : '#141414'}]}
                 onPress={handleLogin}
             >
-                <Text>{type === 'login' ? 'Access' : 'Register'}</Text>
+                <Text>{type === 'login' ? 'Log in' : 'Sign Up'}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
                 onPress={ () => setType(type => type === 'login' ? 'register' : 'login')}
             >
-                <Text style={{textAlign: 'center'}}>{type === 'login' ? 'Create an account' : 'I already have an account'}</Text>
+                <Text style={{textAlign: 'center'}}>{type === 'login' ? 'Create an account' : 'Already have an account'}</Text>
             </TouchableOpacity>
         </SafeAreaView>
-
-  );
+    );
 }
 
 const styles = StyleSheet.create({
@@ -60,8 +59,8 @@ const styles = StyleSheet.create({
         paddingTop: 40,
         backgroundColor: '#F2f6fc',
         paddingHorizontal: 10,
-      },
-      input:{
+    },
+    input:{
         marginBottom: 10,
         backgroundColor: '#FFF',
         borderRadius: 4,
@@ -69,15 +68,15 @@ const styles = StyleSheet.create({
         padding: 10,
         borderWidth: 1,
         borderColor: '#141414'
-      },
-      handleLogin:{
+    },
+    handleLogin:{
         alignItems: 'center',
         justifyContent:'center',
         height: 45,
         marginBottom: 10,
-      },
-      loginText:{
+    },
+    loginText:{
         color: '#FFF',
         fontSize: 17,
-      }
+    }
 })
